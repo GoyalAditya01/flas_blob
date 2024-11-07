@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blob Storage Interface</title>
+</head>
+<body>
+    <h1>Azure Blob Storage Operations</h1>
+    <button onclick="fetchData('/download_blob')">Download Blob</button>
+    <button onclick="fetchData('/list_blobs')">List Blobs</button>
+    <button onclick="fetchData('/get_multi_blob_data')">Get Multi Blob Data</button>
+    <button onclick="fetchData('/upload_blob', { method: 'POST' })">Upload Blob</button>
+    <pre id="response"></pre>
+    
+    <script>
+        async function fetchData(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                const contentType = response.headers.get("content-type");
+                
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    document.getElementById('response').innerText = JSON.stringify(data, null, 2);
+                } else if (contentType && contentType.includes("application/octet-stream")) {
+                    const blob = await response.blob();
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = downloadUrl;
+                    a.download = "downloaded_blob.pptx";
+                    a.click();
+                    URL.revokeObjectURL(downloadUrl);
+                    document.getElementById('response').innerText = "File downloaded successfully.";
+                } else {
+                    document.getElementById('response').innerText = "Unsupported content type.";
+                }
+            } catch (error) {
+                document.getElementById('response').innerText = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
